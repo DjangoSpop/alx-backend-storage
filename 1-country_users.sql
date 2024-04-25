@@ -1,6 +1,8 @@
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+-- we can create a users table then add the an country enum with defult us 
+-- to the table.
+CREATE TABLE IF NOT EXISTS users (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255),
     country ENUM('US', 'CO', 'TN') NOT NULL DEFAULT 'US'
 );
