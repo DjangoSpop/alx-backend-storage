@@ -12,5 +12,3 @@ BEGIN
     INSERT INTO average_scores (user_id, average_score)
     VALUES (user_id, avg_score);
 END //
-
-DELIMITER ;
