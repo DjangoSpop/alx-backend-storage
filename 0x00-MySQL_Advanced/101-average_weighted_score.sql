@@ -1,24 +1,34 @@
--- create a stored procedure named ComputeAverageWeightedScoreForUsers that computes the average weighted score for each user and updates the users table with the computed values. The scores table contains the following columns: user_id, score, and weight. The users table contains the following columns: id and average_weighted_score. The average weighted score for a user is computed as the sum of (score * weight) divided by the sum of weight for that user. The average weighted score should be rounded to two decimal places. The stored procedure should use a temporary table to store the computed average weighted scores before updating the users table. The stored procedure should have the following signature:
--- CREATE PROCEDURE ComputeAverageWeightedScoreForUsers()
-CREATE PROCEDURE ComputeAverageWeightedScoreForUsers()
+-- creates a stored procedure ComputeAverageWeightedScoreForUser that
+-- computes and store the average weighted score for a student.
+DROP PROCEDURE IF EXISTS ComputeAverageWeightedScoreForUser;
+DELIMITER $$
+CREATE PROCEDURE ComputeAverageWeightedScoreForUser (user_id INT)
 BEGIN
-    -- Create a temporary table to store the computed average weighted scores
-    CREATE TEMPORARY TABLE temp_average_weighted_scores (
-        user_id INT,
-        average_weighted_score DECIMAL(10, 2)
-    );
+    DECLARE total_weighted_score INT DEFAULT 0;
+    DECLARE total_weight INT DEFAULT 0;
 
-    -- Compute the average weighted score for each user and insert into the temporary table
-    INSERT INTO temp_average_weighted_scores (user_id, average_weighted_score)
-    SELECT user_id, SUM(score * weight) / SUM(weight) AS average_weighted_score
-    FROM scores
-    GROUP BY user_id;
+    SELECT SUM(corrections.score * projects.weight)
+        INTO total_weighted_score
+        FROM corrections
+            INNER JOIN projects
+                ON corrections.project_id = projects.id
+        WHERE corrections.user_id = user_id;
 
-    -- Update the users table with the computed average weighted scores
-    UPDATE users
-    INNER JOIN temp_average_weighted_scores ON users.id = temp_average_weighted_scores.user_id
-    SET users.average_weighted_score = temp_average_weighted_scores.average_weighted_score;
+    SELECT SUM(projects.weight)
+        INTO total_weight
+        FROM corrections
+            INNER JOIN projects
+                ON corrections.project_id = projects.id
+        WHERE corrections.user_id = user_id;
 
-    -- Drop the temporary table
-    DROP TABLE temp_average_weighted_scores;
-END 
+    IF total_weight = 0 THEN
+        UPDATE users
+            SET users.average_score = 0
+            WHERE users.id = user_id;
+    ELSE
+        UPDATE users
+            SET users.average_score = total_weighted_score / total_weight
+            WHERE users.id = user_id;
+    END IF;
+END $$
+DELIMITER ;

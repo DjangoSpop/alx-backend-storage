@@ -1,18 +1,34 @@
--- WE WILL USE THE FOLLOWING SCHEMA
--- CREATE TABLE bonuses 
-CREATE PROCEDURE ComputeAverageWeightedScoreForUser (IN user_id INT)
+-- creates a stored procedure ComputeAverageWeightedScoreForUser that
+-- computes and store the average weighted score for a student.
+DROP PROCEDURE IF EXISTS ComputeAverageWeightedScoreForUser;
+DELIMITER $$
+CREATE PROCEDURE ComputeAverageWeightedScoreForUser (user_id INT)
 BEGIN
-  DECLARE avg_score DECIMAL(10, 2);
-  
-  SELECT AVG(b.score * p.weight) INTO avg_score
-  FROM bonuses b
-  JOIN projects p
-  ON b.project_id = p.id
-  WHERE b.user_id = user_id;
-  
-  IF avg_score IS NULL THEN
-    SET avg_score = 0;
-  END IF;
-  
-  SELECT avg_score;
-END
+    DECLARE total_weighted_score INT DEFAULT 0;
+    DECLARE total_weight INT DEFAULT 0;
+
+    SELECT SUM(corrections.score * projects.weight)
+        INTO total_weighted_score
+        FROM corrections
+            INNER JOIN projects
+                ON corrections.project_id = projects.id
+        WHERE corrections.user_id = user_id;
+
+    SELECT SUM(projects.weight)
+        INTO total_weight
+        FROM corrections
+            INNER JOIN projects
+                ON corrections.project_id = projects.id
+        WHERE corrections.user_id = user_id;
+
+    IF total_weight = 0 THEN
+        UPDATE users
+            SET users.average_score = 0
+            WHERE users.id = user_id;
+    ELSE
+        UPDATE users
+            SET users.average_score = total_weighted_score / total_weight
+            WHERE users.id = user_id;
+    END IF;
+END $$
+DELIMITER ;
