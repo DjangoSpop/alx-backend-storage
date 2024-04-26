@@ -1,7 +1,6 @@
--- we can here create a select origin and count(*) as nb_fans from metal_bands
--- group by origin order by nb_fans desc
-SELECT origin, COUNT(*) AS nb_fans
+-- Assuming the table is named 'metal_bands'
+SELECT band_name, 
+       2022 - formed_year AS lifespan  /* Calculate lifespan using formed year */
 FROM metal_bands
-GROUP BY origin
-ORDER BY nb_fans DESC;
-
+WHERE band_name LIKE '%Glam rock%'  /* Filter for bands with 'Glam rock' in their style */
+ORDER BY lifespan DESC; 

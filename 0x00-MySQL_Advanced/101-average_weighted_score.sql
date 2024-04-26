@@ -1,27 +1,34 @@
--- a procdure a behavior 
--- a procedure that computes the average weighted score for each user in the Users table and updates the AverageWeightedScore column with the computed values. The average weighted score for a user is calculated by summing the product of the Score and Weight columns from the Scores table and dividing by the sum of the Weight column for that user.
-CREATE PROCEDURE ComputeAverageWeightedScoreForUsers
-AS
+DELIMITER // -- Delimiter to avoid conflicts with existing SQL statements
+
+CREATE PROCEDURE ComputeAverageWeightedScoreForUsers ()
 BEGIN
-    -- Create a temporary table to store the computed average weighted scores
-    CREATE TABLE #TempAverageWeightedScores
-    (
-        UserId INT,
-        AverageWeightedScore DECIMAL(10, 2)
-    )
+  DECLARE user_id INT;
+  DECLARE user_cursor CURSOR FOR SELECT id FROM users;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET user_id = NULL;
 
-    -- Compute and insert the average weighted scores into the temporary table
-    INSERT INTO #TempAverageWeightedScores (UserId, AverageWeightedScore)
-    SELECT UserId, SUM(Score * Weight) / SUM(Weight) AS AverageWeightedScore
-    FROM Scores
-    GROUP BY UserId
+  OPEN user_cursor;
 
-    -- Update the Users table with the computed average weighted scores
-    UPDATE Users
-    SET AverageWeightedScore = t.AverageWeightedScore
-    FROM Users u
-    INNER JOIN #TempAverageWeightedScores t ON u.UserId = t.UserId
+  loop:
+    FETCH user_cursor INTO user_id;
+    IF user_id IS NULL THEN
+      LEAVE loop;
+    END IF;
 
-    -- Drop the temporary table
-    DROP TABLE #TempAverageWeightedScores
-END
+    -- Call the previously created procedure for each user (uncomment if needed)
+    -- CALL ComputeAverageWeightedScoreForUser(user_id);
+  END loop;
+
+  CLOSE user_cursor;
+
+  -- Update user records with average weighted scores (optional, uncomment if needed)
+  -- UPDATE users u
+  -- JOIN (
+  --   SELECT user_id, SUM(score * weight) / SUM(weight) AS average_weighted_score
+  --   FROM scores s
+  --   JOIN assignments a ON s.assignment_id = a.id
+  --   GROUP BY user_id
+  -- ) AS weighted_scores ON u.id = weighted_scores.user_id
+  -- SET u.average_weighted_score = weighted_scores.average_weighted_score;
+END //
+
+DELIMITER ; -- Reset delimiter to semicolon

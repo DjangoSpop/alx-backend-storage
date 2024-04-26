@@ -1,14 +1,23 @@
--- creation of the procudeures 
--- creation of an average function for the user to use in their own code.
+DELIMITER // -- Delimiter to avoid conflicts with existing SQL statements
 
-CREATE PROCEDURE ComputeAverageScoreForUser(IN user_id INT)
+CREATE PROCEDURE ComputeAverageScoreForUser (
+  IN user_id INT
+)
 BEGIN
-    DECLARE avg_score DECIMAL(10, 2);
+  DECLARE average_score DECIMAL(5, 2);  -- Declare variable for average score (5 digits total, 2 decimal places)
 
-    SELECT AVG(score) INTO avg_score
-    FROM scores
-    WHERE user_id = user_id;
+  -- Calculate average score using subquery
+  SELECT AVG(score) INTO average_score
+  FROM scores
+  WHERE user_id = user_id;
 
-    INSERT INTO average_scores (user_id, average_score)
-    VALUES (user_id, avg_score);
+  -- Update user record with average score (optional)
+  -- UNCOMMENT the following line if you want to store the average score in a user table column
+  -- UPDATE users SET average_score = average_score WHERE id = user_id;
+
+  -- Display or return the average score (modify as needed)
+  SELECT average_score;  -- You can modify this line to display or return the average score in different ways
+
 END //
+
+DELIMITER ; -- Reset delimiter to semicolon

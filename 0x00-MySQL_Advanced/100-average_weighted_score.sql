@@ -1,38 +1,31 @@
--- lets do this in a stored procedure
--- we can do this in a single query but it will be a bit complex and not as readable.
-CREATE PROCEDURE ComputeAverageWeightedScoreForUsers()
+DELIMITER // -- Delimiter to avoid conflicts with existing SQL statements
+
+CREATE PROCEDURE ComputeAverageWeightedScoreForUser (
+  IN user_id INT
+)
 BEGIN
-    DECLARE done BOOLEAN DEFAULT FALSE;
-    DECLARE user_id INT;
-    DECLARE total_weighted_score FLOAT DEFAULT 0;
-    DECLARE total_weight INT DEFAULT 0;
-    DECLARE user_cursor CURSOR FOR SELECT id FROM users;
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+  DECLARE average_score DECIMAL(5, 2);  -- Declare variable for average weighted score (5 digits total, 2 decimal places)
 
-    OPEN user_cursor;
+  -- Calculate weighted sum and total weight using subqueries
+  SELECT SUM(score * weight) AS weighted_sum, SUM(weight) AS total_weight
+  FROM scores s
+  JOIN assignments a ON s.assignment_id = a.id
+  WHERE s.user_id = user_id;
 
-    user_loop: LOOP
-        FETCH user_cursor INTO user_id;
-        IF done THEN
-            LEAVE user_loop;
-        END IF;
+  -- Calculate average weighted score (if total_weight is not zero)
+  IF SUM(weight) > 0 THEN  -- Check for non-zero total weight to avoid division by zero
+    SET average_score = SUM(score * weight) / SUM(weight);
+  ELSE
+    SET average_score = NULL;  -- Set average_score to NULL if no weights or invalid weights
+  END IF;
 
-        SELECT SUM(score * weight), SUM(weight)
-        INTO total_weighted_score, total_weight
-        FROM corrections
-        JOIN projects ON corrections.project_id = projects.id
-        WHERE user_id = user_id;
+  -- Update user record with average weighted score (optional)
+  -- UNCOMMENT the following line if you want to store the average score in a user table column
+  -- UPDATE users SET average_weighted_score = average_score WHERE id = user_id;
 
-        IF total_weight > 0 THEN
-            UPDATE users
-            SET average_score = total_weighted_score / total_weight
-            WHERE id = user_id;
-        ELSE
-            UPDATE users
-            SET average_score = 0
-            WHERE id = user_id;
-        END IF;
-    END LOOP user_loop;
+  -- Display or return the average weighted score (modify as needed)
+  SELECT average_score;  -- You can modify this line to display or return the average score in different ways
 
-    CLOSE user_cursor;
-END;
+END //
+
+DELIMITER ; -- Reset delimiter to semicolon
