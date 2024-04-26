@@ -1,6 +1,9 @@
 -- Assuming the table is named 'metal_bands'
-SELECT band_name, 
-       2022 - formed_year AS lifespan  /* Calculate lifespan using formed year */
-FROM metal_bands
-WHERE band_name LIKE '%Glam rock%'  /* Filter for bands with 'Glam rock' in their style */
-ORDER BY lifespan DESC; 
+SELECT 
+    country AS origin,
+    COUNT(fan_id) AS nb_fans
+FROM bands b
+JOIN band_members bm ON b.band_id = bm.band_id
+JOIN fans f ON bm.member_id = f.member_id
+GROUP BY country
+ORDER BY nb_fans DESC;
