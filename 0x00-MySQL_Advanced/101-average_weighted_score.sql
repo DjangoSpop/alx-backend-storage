@@ -1,34 +1,24 @@
-DELIMITER // -- Delimiter to avoid conflicts with existing SQL statements
-
-CREATE PROCEDURE ComputeAverageWeightedScoreForUsers ()
+-- create a stored procedure named ComputeAverageWeightedScoreForUsers that computes the average weighted score for each user and updates the users table with the computed values. The scores table contains the following columns: user_id, score, and weight. The users table contains the following columns: id and average_weighted_score. The average weighted score for a user is computed as the sum of (score * weight) divided by the sum of weight for that user. The average weighted score should be rounded to two decimal places. The stored procedure should use a temporary table to store the computed average weighted scores before updating the users table. The stored procedure should have the following signature:
+-- CREATE PROCEDURE ComputeAverageWeightedScoreForUsers()
+CREATE PROCEDURE ComputeAverageWeightedScoreForUsers()
 BEGIN
-  DECLARE user_id INT;
-  DECLARE user_cursor CURSOR FOR SELECT id FROM users;
-  DECLARE CONTINUE HANDLER FOR NOT FOUND SET user_id = NULL;
+    -- Create a temporary table to store the computed average weighted scores
+    CREATE TEMPORARY TABLE temp_average_weighted_scores (
+        user_id INT,
+        average_weighted_score DECIMAL(10, 2)
+    );
 
-  OPEN user_cursor;
+    -- Compute the average weighted score for each user and insert into the temporary table
+    INSERT INTO temp_average_weighted_scores (user_id, average_weighted_score)
+    SELECT user_id, SUM(score * weight) / SUM(weight) AS average_weighted_score
+    FROM scores
+    GROUP BY user_id;
 
-  loop:
-    FETCH user_cursor INTO user_id;
-    IF user_id IS NULL THEN
-      LEAVE loop;
-    END IF;
+    -- Update the users table with the computed average weighted scores
+    UPDATE users
+    INNER JOIN temp_average_weighted_scores ON users.id = temp_average_weighted_scores.user_id
+    SET users.average_weighted_score = temp_average_weighted_scores.average_weighted_score;
 
-    -- Call the previously created procedure for each user (uncomment if needed)
-    -- CALL ComputeAverageWeightedScoreForUser(user_id);
-  END loop;
-
-  CLOSE user_cursor;
-
-  -- Update user records with average weighted scores (optional, uncomment if needed)
-  -- UPDATE users u
-  -- JOIN (
-  --   SELECT user_id, SUM(score * weight) / SUM(weight) AS average_weighted_score
-  --   FROM scores s
-  --   JOIN assignments a ON s.assignment_id = a.id
-  --   GROUP BY user_id
-  -- ) AS weighted_scores ON u.id = weighted_scores.user_id
-  -- SET u.average_weighted_score = weighted_scores.average_weighted_score;
-END //
-
-DELIMITER ; -- Reset delimiter to semicolon
+    -- Drop the temporary table
+    DROP TABLE temp_average_weighted_scores;
+END 
