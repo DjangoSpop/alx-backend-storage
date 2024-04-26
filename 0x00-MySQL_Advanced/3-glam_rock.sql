@@ -1,6 +1,6 @@
--- Head: 3.1-glam_rock.sql
--- we here create a sql script that creates a table of metal bands that have
-SELECT band_name, (2022 - IFNULL(YEAR(formed), 2022)) - IFNULL(YEAR(split), 0) AS lifespan
-FROM metal_bands
-WHERE style LIKE '%Glam rock%'
-ORDER BY lifespan DESC;
+-- Lists all bands with Glam rock as their main style, ranked by their longevity.
+-- SELECT band_name, (IFNULL(split, YEAR(CURRENT_DATE())) - formed) AS lifespan
+SELECT band_name, (IFNULL(split, '2020') - formed) AS lifespan
+    FROM metal_bands
+    WHERE FIND_IN_SET('Glam rock', IFNULL(style, "")) > 0
+    ORDER BY lifespan DESC;
