@@ -1,2 +1,6 @@
 // Insert shell command in mongo db with database name as an option
-db.school.insertOne({ name: "Holberton school" })
+db.collection.insertOne(
+    {
+       name : "Holberton school" 
+    }
+)
