@@ -1,0 +1,6 @@
+const MongoClient = require('mongodb').MongoClient;
+
+const url = 'mongodb://localhost:27017';
+const dbName = 'school';
+const client = new MongoClient(url);
+client.connect(err => err ? console.error('Error connecting to the database:', err) : client.db(dbName).collection('school').updateMany({ name: 'Holberton school' }, { $set: { address: '972 Mission street' } }, (err, result) => err ? console.error('Error updating documents:', err) : console.log('Documents updated successfully:', result.modifiedCount) && client.close()));

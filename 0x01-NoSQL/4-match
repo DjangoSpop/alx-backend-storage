@@ -1,0 +1,4 @@
+#!/bin/bash
+//we command to find the find command in mongo no sql
+use school;
+db.school.find({ name: "Holberton school" });
