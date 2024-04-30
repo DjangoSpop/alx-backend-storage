@@ -1,3 +1,2 @@
 // Insert shell command in mongo db with database name as an option
-const dbName = "school";
-db.getSiblingDB(dbName).school.insertOne({ name: "Holberton school" });
+db.school.insertOne({ name: "Holberton school" })
