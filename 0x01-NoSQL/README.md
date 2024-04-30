@@ -1,0 +1,1 @@
+we will make a mongo db script for some tasks then worj with it with python mongo module to work as a backend professional 
