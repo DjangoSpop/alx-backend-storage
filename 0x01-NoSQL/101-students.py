@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
+""" MongoDB Operations with Python using pymongo """
+
+
 def top_students(mongo_collection):
-    """_summary_
+    # sourcery skip: inline-immediately-returned-variable
+    """ Returns all students sorted by average score """
+    top_student = mongo_collection.aggregate([
+        {
+            "$project": {
+                "name": "$name",
+                "averageScore": {"$avg": "$topics.score"}
+            }
+        },
+        {"$sort": {"averageScore": -1}}
+    ])
 
-    Args:
-        mongo_collection (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """    
-    students = mongo_collection.find()
-    sorted_students = sorted(students, key=lambda x: x['averageScore'], reverse=True)
-    return sorted_students
+    return top_student
