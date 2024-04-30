@@ -1,0 +1,2 @@
+//mongo command to create a dataabase
+use my_db
