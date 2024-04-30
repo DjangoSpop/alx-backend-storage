@@ -1,0 +1,2 @@
+// issert shell command in mongo db 
+db.school.insertOne({ name: "Holberton school" })
