@@ -5,7 +5,9 @@ get page and use the count in redis
 to get the request has been made to
 the url
 """
-def get_page(url:str)-> str:
+
+
+def get_page(url: str) -> str:
     url = 'http://slowwly.robertomurray.co.uk'
     requests.get(url)
     redis_client = redis.Redis()
@@ -18,5 +20,3 @@ def get_page(url:str)-> str:
     result_key = f"result:{url}"
     redis_client.set(result_key, get_page(url))
     redis_client.expire(result_key, 10)
-    
-
